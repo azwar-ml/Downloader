@@ -27,6 +27,10 @@ tmp/
 .env
 .env.local
 .env.*.local
+cookies.txt
+*cookies*.txt
+*.cookie
+*.cookies
 
 # IDE and Editor Artifacts
 .vscode/

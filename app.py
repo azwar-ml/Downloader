@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, after_this_request
 from pathlib import Path
 from typing import Any, cast
 import yt_dlp
+from yt_dlp.utils import DownloadError, ExtractorError
 import os
+import tempfile
 import threading
 import time
 import re
@@ -14,17 +16,18 @@ DOWNLOAD_DIR = BASE_DIR / "downloads"
 DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 active_downloads = {}
+COOKIE_FILE_PATH = None
 
-# Helper to remove those ugly terminal color codes
+# Helper to remove terminal color/formatting codes
 def clean_text(text):
-    if not text: return ""
+    if not text:
+        return ""
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     return ansi_escape.sub('', str(text))
 
 def format_size(value):
     if not value:
         return "Unknown size"
-
     try:
         size_mb = value / 1024 / 1024
         if size_mb >= 1024:
@@ -32,6 +35,77 @@ def format_size(value):
         return f"{size_mb:.1f} MB"
     except Exception:
         return "Unknown size"
+
+def get_cookie_file_path():
+    """Extract cookies from YOUTUBE_COOKIES environment variable or local cookies.txt file."""
+    global COOKIE_FILE_PATH
+    cookie_content = os.environ.get('YOUTUBE_COOKIES')
+    
+    # If no environment variable, check for a local cookies.txt in the project directory
+    if not cookie_content:
+        local_cookie_path = BASE_DIR / "cookies.txt"
+        if local_cookie_path.is_file():
+            return str(local_cookie_path)
+        return None
+
+    if COOKIE_FILE_PATH and os.path.exists(COOKIE_FILE_PATH):
+        return COOKIE_FILE_PATH
+
+    try:
+        temp_dir = tempfile.gettempdir()
+        cookie_file = os.path.join(temp_dir, "yt_cookies.txt")
+        with open(cookie_file, "w", encoding="utf-8") as f:
+            f.write(cookie_content.strip() + "\n")
+        COOKIE_FILE_PATH = cookie_file
+        return COOKIE_FILE_PATH
+    except Exception as e:
+        app.logger.warning(f"Could not initialize cookie file: {e}")
+        return None
+
+def get_ydl_options(extra_opts=None):
+    """
+    Centralized yt-dlp configuration using mobile API clients (Android/iOS)
+    to bypass datacenter IP bot detection on cloud providers like Render.
+    """
+    opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'noplaylist': True,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'ios'],
+                'player_skip': ['webpage', 'configs']
+            }
+        }
+    }
+
+    # Dynamically inject cookie file if available
+    cookie_path = get_cookie_file_path()
+    if cookie_path:
+        opts['cookiefile'] = cookie_path
+
+    if extra_opts:
+        opts.update(extra_opts)
+
+    return opts
+
+def cleanup_old_downloads(max_age_seconds=1800):
+    """Background daemon to delete uncollected media older than 30 minutes to prevent disk fill."""
+    while True:
+        try:
+            now = time.time()
+            for item in DOWNLOAD_DIR.glob("*"):
+                if item.is_file() and (now - item.stat().st_mtime) > max_age_seconds:
+                    try:
+                        item.unlink()
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+        time.sleep(300)
+
+# Start periodic ephemeral disk cleanup daemon
+threading.Thread(target=cleanup_old_downloads, daemon=True).start()
 
 def build_options(info):
     options = [
@@ -118,13 +192,11 @@ def build_options(info):
     return options
 
 def run_download(url, task_id, format_id):
-    # Hook must be defined INSIDE to capture 'task_id' correctly
     def progress_hook(d):
         if d['status'] == 'downloading':
-            p = clean_text(d.get('_percent_str', '0%')).replace('%','')
+            p = clean_text(d.get('_percent_str', '0%')).replace('%', '')
             speed = clean_text(d.get('_speed_str', 'N/A'))
             eta = clean_text(d.get('_eta_str', 'N/A'))
-            
             active_downloads[task_id] = {
                 "status": "downloading",
                 "percent": p,
@@ -132,25 +204,35 @@ def run_download(url, task_id, format_id):
                 "eta": eta
             }
         elif d['status'] == 'finished':
-            active_downloads[task_id] = {"status": "finished", "percent": "100", "filename": os.path.basename(d.get('filename', ''))}
-    
+            fname = os.path.basename(d.get('filename', ''))
+            active_downloads[task_id] = {
+                "status": "finished",
+                "percent": "100",
+                "filename": fname
+            }
+
     if format_id in {"best", "bv*+ba/best", "bestaudio/best"}:
         final_format = format_id if format_id != "best" else "bestvideo+bestaudio/best"
     else:
         final_format = f"{format_id}+bestaudio/best"
 
-    ydl_opts = {
+    ydl_opts = get_ydl_options({
         "format": final_format,
         "merge_output_format": "mp4",
         "outtmpl": str(DOWNLOAD_DIR / "%(title)s.%(ext)s"),
-        "quiet": True,
-        "noplaylist": True,
         "progress_hooks": [progress_hook],
-    }
+    })
 
     try:
         with yt_dlp.YoutubeDL(cast(Any, ydl_opts)) as ydl:
             ydl.download([url])
+    except DownloadError as e:
+        msg = clean_text(str(e))
+        if "confirm you’re not a bot" in msg or "confirm you're not a bot" in msg:
+            msg = "YouTube bot protection triggered on server. Please add your YOUTUBE_COOKIES to Render environment settings."
+        elif "Private video" in msg:
+            msg = "This video is private and cannot be downloaded."
+        active_downloads[task_id] = {"status": "error", "message": msg}
     except Exception as e:
         active_downloads[task_id] = {"status": "error", "message": str(e)}
 
@@ -160,19 +242,17 @@ def index():
 
 @app.route("/analyze", methods=["POST"])
 def analyze_video():
-    url = request.json.get("url")
-    if not url: return jsonify({"error": "No URL provided"}), 400
+    data = request.json or {}
+    url = data.get("url")
+    if not url:
+        return jsonify({"error": "No URL provided"}), 400
 
     try:
-        ydl_opts = {
-            "quiet": True, 
-            "noplaylist": True,
-        }
-        
+        ydl_opts = get_ydl_options()
         with yt_dlp.YoutubeDL(cast(Any, ydl_opts)) as ydl:
             info = ydl.extract_info(url, download=False)
             formats = build_options(info)
-            
+
             return jsonify({
                 "title": info.get('title'),
                 "thumbnail": info.get('thumbnail'),
@@ -181,16 +261,28 @@ def analyze_video():
                 "options": formats
             })
 
+    except DownloadError as e:
+        msg = clean_text(str(e))
+        if "confirm you’re not a bot" in msg or "confirm you're not a bot" in msg:
+            msg = "YouTube bot protection triggered on server. Please add your YOUTUBE_COOKIES to Render environment settings."
+        elif "Private video" in msg:
+            msg = "This video is private."
+        elif "Video unavailable" in msg:
+            msg = "This video is unavailable or has been removed."
+        return jsonify({"error": msg}), 400
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Failed to analyze video: {clean_text(str(e))}"}), 500
 
 @app.route("/start-download", methods=["POST"])
 def start_download():
-    data = request.json
+    data = request.json or {}
     url = data.get("url")
     format_id = data.get("format_id", "best")
-    
-    task_id = str(int(time.time()))
+
+    if not url:
+        return jsonify({"error": "No URL provided"}), 400
+
+    task_id = str(int(time.time() * 1000))
     active_downloads[task_id] = {"status": "starting", "percent": "0"}
 
     thread = threading.Thread(target=run_download, args=(url, task_id, format_id))
@@ -204,6 +296,24 @@ def get_progress(task_id):
 
 @app.route("/downloads/<path:filename>", methods=["GET"])
 def download_file(filename):
+    file_path = DOWNLOAD_DIR / filename
+    if not file_path.is_file():
+        return jsonify({"error": "File not found or already deleted from server"}), 404
+
+    # Automatically clean up the file after it is served to preserve ephemeral disk space
+    @after_this_request
+    def remove_file(response):
+        def delayed_delete():
+            time.sleep(2)  # Allow response transmission to complete safely
+            try:
+                if file_path.exists():
+                    os.remove(file_path)
+            except Exception as err:
+                app.logger.warning(f"Failed to delete served file {file_path}: {err}")
+
+        threading.Thread(target=delayed_delete, daemon=True).start()
+        return response
+
     return send_from_directory(DOWNLOAD_DIR, filename, as_attachment=True)
 
 if __name__ == "__main__":
