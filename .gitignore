@@ -1,0 +1,41 @@
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+*.venv/
+
+# Python Bytecode and Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Local Media Downloads and Temporary Files
+downloads/
+temp/
+tmp/
+*.mp4
+*.mp3
+*.m4a
+*.webm
+*.part
+*.ytdl
+
+# Environment and Secret Configurations
+.env
+.env.local
+.env.*.local
+
+# IDE and Editor Artifacts
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# Operating System Files
+.DS_Store
+Thumbs.db

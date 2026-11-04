@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Downloader by Azwar Malhi | VidPRO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #030712;
+            --panel: rgba(15, 23, 42, 0.78);
+            --panel-soft: rgba(30, 41, 59, 0.65);
+            --panel-hover: rgba(30, 41, 59, 0.9);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(124, 58, 237, 0.45);
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --muted-dark: #64748b;
+            --accent: #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.35);
+            --accent-2: #22d3ee;
+            --accent-2-glow: rgba(34, 211, 238, 0.25);
+            --accent-3: #10b981;
+            --shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            min-height: 100%;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 15% 10%, rgba(124, 58, 237, 0.22), transparent 38%),
+                radial-gradient(circle at 85% 15%, rgba(34, 211, 238, 0.16), transparent 32%),
+                radial-gradient(circle at 50% 90%, rgba(245, 158, 11, 0.09), transparent 34%),
+                linear-gradient(180deg, #020617 0%, #050816 50%, #030712 100%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent 85%);
+            z-index: 0;
+        }
+
+        /* TOP NAVIGATION HEADER */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(3, 7, 18, 0.75);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #7c3aed 0%, #22d3ee 100%);
+            box-shadow: 0 8px 24px var(--accent-glow);
+            color: #ffffff;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .brand-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.45rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+        }
+
+        .brand-title span {
+            color: #38bdf8;
+        }
+
+        .brand-tag {
+            font-size: 0.75rem;
+            color: var(--muted);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* HEADER CENTER: PROMINENT TITLE BY AZWAR MALHI */
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .header-title-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        .header-title-text i {
+            color: #a78bfa;
+            font-size: 0.95rem;
+        }
+
+        .header-author-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--muted);
+            border-left: 1px solid rgba(255, 255, 255, 0.12);
+            padding-left: 12px;
+        }
+
+        .header-author-name {
+            background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.22);
+            color: #6ee7b7;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* MAIN CONTAINER */
+        .shell {
+            position: relative;
+            z-index: 1;
+            width: min(1200px, calc(100% - 36px));
+            margin: 0 auto;
+            padding: 36px 0 60px;
+            flex: 1;
+        }
+
+        /* HERO TWO COLUMNS BALANCED */
+        .hero {
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: border-color 0.25s ease;
+        }
+
+        .panel:hover {
+            border-color: rgba(255, 255, 255, 0.14);
+        }
+
+        /* LEFT PANEL (INTRO) */
+        .intro {
+            padding: 34px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .intro::after {
+            content: '';
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            right: -100px;
+            top: -100px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.25), transparent 70%);
+            pointer-events: none;
+        }
+
+        .intro-top {
+            position: relative;
+            z-index: 2;
+        }
+
+        .intro-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(124, 58, 237, 0.15);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            color: #c4b5fd;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .intro h1 {
+            margin: 0 0 16px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 3.8vw, 3.2rem);
+            line-height: 1.08;
+            letter-spacing: -0.05em;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .intro p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 1.02rem;
+            line-height: 1.7;
+            max-width: 52ch;
+        }
+
+        .feature-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 15px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.035);
+            color: #e2e8f0;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .chip i {
+            color: #38bdf8;
+            font-size: 0.85rem;
+        }
+
+        .chip:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.16);
+        }
+
+        .support-card {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .metric {
+            padding: 16px 14px;
+            border-radius: 20px;
+            background: var(--panel-soft);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .metric strong {
+            font-size: 0.96rem;
+            color: #ffffff;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .metric strong i {
+            color: #a78bfa;
+            font-size: 0.88rem;
+        }
+
+        .metric span {
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+
+        /* RIGHT PANEL (CONTROL & ACTIONS) */
+        .control {
+            padding: 34px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control::after {
+            content: '';
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            left: -80px;
+            bottom: -80px;
+            background: radial-gradient(circle, rgba(34, 211, 238, 0.18), transparent 70%);
+            pointer-events: none;
+        }
+
+        .control-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .field-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ffffff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        .field-label i {
+            color: #38bdf8;
+        }
+
+        .input-shell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 20px;
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            background: rgba(2, 6, 23, 0.65);
+            transition: all 0.25s ease;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-shell:focus-within {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 4px var(--accent-glow), inset 0 2px 8px rgba(0, 0, 0, 0.3);
+            background: rgba(2, 6, 23, 0.85);
+        }
+
+        .input-icon {
+            color: var(--muted-dark);
+            padding-left: 6px;
+            font-size: 1.1rem;
+        }
+
+        input {
+            flex: 1;
+            border: 0;
+            outline: none;
+            background: transparent;
+            color: var(--text);
+            font-size: 0.98rem;
+            font-family: inherit;
+            padding: 10px 6px;
+            min-width: 0;
+        }
+
+        input::placeholder {
+            color: #64748b;
+        }
+
+        .icon-btn {
+            border: 0;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--muted);
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+
+        .btn-main {
+            border: 0;
+            border-radius: 16px;
+            padding: 12px 22px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.22s ease;
+            background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-main:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(37, 99, 235, 0.45);
+            background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+        }
+
+        .btn-main:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .help-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+
+        /* PLATFORMS SUPPORT ROW */
+        .supported-row {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .supported-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--muted-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .supported-icons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .platform-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+
+        .platform-pill i {
+            font-size: 0.95rem;
+        }
+
+        /* QUICK STEPS IN RIGHT PANEL TO BALANCE HEIGHT */
+        .quick-steps {
+            margin-top: 26px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .step-item {
+            padding: 14px 12px;
+            border-radius: 18px;
+            background: rgba(2, 6, 23, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .step-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(124, 58, 237, 0.2);
+            color: #c4b5fd;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: grid;
+            place-items: center;
+            margin-bottom: 2px;
+        }
+
+        .step-title {
+            font-size: 0.85rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .step-desc {
+            font-size: 0.75rem;
+            color: var(--muted);
+            line-height: 1.35;
+        }
+
+        /* MESSAGE BOX */
+        .message-box {
+            display: none;
+            margin-top: 18px;
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 0.92rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .error-msg {
+            color: #fecaca;
+            background: rgba(251, 113, 133, 0.12);
+            border: 1px solid rgba(251, 113, 133, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .success-msg {
+            color: #bbf7d0;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* RESULTS PANEL */
+        #video-info {
+            display: none;
+            margin-top: 28px;
+            padding: 30px;
+        }
+
+        .results-head {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 24px;
+            align-items: start;
+            padding-bottom: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .thumb-wrap {
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            aspect-ratio: 16 / 10;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .vid-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .thumb-wrap:hover .vid-thumb {
+            transform: scale(1.04);
+        }
+
+        .title-block {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .title-block h2 {
+            margin: 0;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+            line-height: 1.25;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+        }
+
+        .title-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(34, 211, 238, 0.12);
+            color: #a5f3fc;
+            border: 1px solid rgba(34, 211, 238, 0.2);
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+
+        .badge.subtle {
+            background: rgba(148, 163, 184, 0.1);
+            color: #cbd5e1;
+            border-color: rgba(148, 163, 184, 0.16);
+        }
+
+        .badge.author-tag {
+            background: rgba(124, 58, 237, 0.15);
+            color: #c4b5fd;
+            border-color: rgba(124, 58, 237, 0.25);
+        }
+
+        /* FORMAT FILTER TABS */
+        .format-section {
+            margin-top: 24px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .format-filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .filter-tabs {
+            display: inline-flex;
+            gap: 6px;
+            padding: 4px;
+            border-radius: 14px;
+            background: rgba(2, 6, 23, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .tab-btn {
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);
+        }
+
+        .format-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
+        }
+
+        .format-card {
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.035);
+            border-radius: 20px;
+            padding: 18px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.22s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .format-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(124, 58, 237, 0.6);
+            background: rgba(124, 58, 237, 0.12);
+            box-shadow: 0 12px 28px rgba(124, 58, 237, 0.2);
+        }
+
+        .format-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .format-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .format-type-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            display: grid;
+            place-items: center;
+            color: #38bdf8;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .format-card:hover .format-type-icon {
+            background: rgba(124, 58, 237, 0.3);
+            color: #ffffff;
+        }
+
+        .format-title {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .format-note {
+            color: var(--muted);
+            font-size: 0.82rem;
+            margin-top: 2px;
+        }
+
+        .format-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .size-badge {
+            font-size: 0.84rem;
+            color: #cbd5e1;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 4px 10px;
+            border-radius: 999px;
+        }
+
+        .dl-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: #a78bfa;
+            transition: transform 0.2s ease;
+        }
+
+        .format-card:hover .dl-pill {
+            transform: translateX(3px);
+            color: #ffffff;
+        }
+
+        /* PROGRESS PANEL */
+        #progress-area {
+            display: none;
+            margin-top: 28px;
+            padding: 30px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .progress-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-track {
+            height: 14px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #7c3aed 0%, #22d3ee 50%, #10b981 100%);
+            transition: width 0.25s ease;
+            box-shadow: 0 0 18px rgba(34, 211, 238, 0.5);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.94rem;
+        }
+
+        .stats-speed {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-percent {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #ffffff;
+        }
+
+        .progress-actions {
+            margin-top: 24px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        /* FOOTER */
+        .site-footer {
+            border-top: 1px solid var(--border);
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 24px 0;
+            margin-top: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-inner {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .footer-credit {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .footer-credit strong {
+            background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        /* ANIMATIONS */
+        .fade-in {
+            animation: fadeIn 0.4s ease both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* RESPONSIVE DESIGN */
+        @media (max-width: 980px) {
+            .nav-inner {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .header-center {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+            }
+
+            .support-card {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-steps {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 680px) {
+            .shell {
+                width: calc(100% - 24px);
+                padding: 20px 0 40px;
+            }
+
+            .intro, .control, #video-info, #progress-area {
+                padding: 22px;
+                border-radius: 22px;
+            }
+
+            .results-head {
+                grid-template-columns: 1fr;
+            }
+
+            .input-shell {
+                flex-wrap: wrap;
+            }
+
+            .btn-main {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                text-align: center;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAVIGATION HEADER PROMINENTLY ALIGNED -->
+<header class="top-nav">
+    <div class="nav-inner">
+        <a href="/" class="brand-link">
+            <div class="brand-mark">
+                <i class="fas fa-play"></i>
+            </div>
+            <div class="brand-info">
+                <span class="brand-title">Vid<span>PRO</span></span>
+                <span class="brand-tag">Smart Media Engine</span>
+            </div>
+        </a>
+
+        <!-- PROMINENT HEADER: VIDEO DOWNLOADER BY AZWAR MALHI -->
+        <div class="header-center">
+            <div class="header-title-text">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+                <span>Video Downloader</span>
+            </div>
+            <div class="header-author-badge">
+                <span>by</span>
+                <span class="header-author-name">Azwar Malhi</span>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <div class="live-status">
+                <span class="pulse-dot"></span>
+                <span>Fast & Ready</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- MAIN APP SHELL -->
+<main class="shell">
+    <!-- TWO BALANCED HERO COLUMNS -->
+    <section class="hero">
+        <!-- LEFT PANEL: FEATURES & HIGHLIGHTS -->
+        <div class="panel intro fade-in">
+            <div class="intro-top">
+                <div class="intro-badge">
+                    <i class="fa-solid fa-sparkles"></i> High-Speed Downloader
+                </div>
+
+                <h1>Download media with quality choices, clear sizes, and a cleaner flow.</h1>
+                
+                <p>
+                    Paste any supported video or media link, inspect all available resolutions, and start high-speed downloads directly to your device without clutter.
+                </p>
+
+                <div class="feature-row">
+                    <div class="chip"><i class="fa-solid fa-layer-group"></i> Multiple formats</div>
+                    <div class="chip"><i class="fa-solid fa-file-arrow-down"></i> Size estimates</div>
+                    <div class="chip"><i class="fa-solid fa-bolt"></i> Fast fetch</div>
+                    <div class="chip"><i class="fa-solid fa-shield-halved"></i> Playlist blocked</div>
+                </div>
+            </div>
+
+            <div class="support-card">
+                <div class="metric">
+                    <strong><i class="fa-solid fa-link"></i> Any supported link</strong>
+                    <span>Uses yt-dlp extraction for YouTube, TikTok, Facebook & more.</span>
+                </div>
+                <div class="metric">
+                    <strong><i class="fa-solid fa-sliders"></i> Quality aware</strong>
+                    <span>Shows video, audio, and best-available options clearly.</span>
+                </div>
+                <div class="metric">
+                    <strong><i class="fa-solid fa-chart-line"></i> Progress live</strong>
+                    <span>Tracks download percentage, speed in real time, and ETA.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: URL INPUT & CONSOLE -->
+        <div class="panel control fade-in">
+            <div>
+                <div class="control-header">
+                    <label class="field-label" for="url">
+                        <i class="fa-solid fa-link"></i> Paste video or media link
+                    </label>
+                    <span class="badge subtle" style="font-size:0.75rem;">Direct Link</span>
+                </div>
+
+                <div class="input-shell">
+                    <i class="fa-solid fa-globe input-icon"></i>
+                    <input 
+                        type="text" 
+                        id="url" 
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+                    <button type="button" class="icon-btn" onclick="clearInput()" id="clearBtn" title="Clear input" style="display:none;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <button type="button" class="icon-btn" onclick="pasteFromClipboard()" title="Paste from clipboard">
+                        <i class="fa-regular fa-clipboard"></i> Paste
+                    </button>
+                    <button class="btn-main" onclick="analyzeVideo()" id="analyzeBtn">
+                        <i class="fa-solid fa-magnifying-glass"></i> Analyze
+                    </button>
+                </div>
+
+                <div class="help-row">
+                    <span><i class="fa-regular fa-circle-question"></i> Use a direct page link, not a file path.</span>
+                    <span id="sourceHint">Results appear below after analysis.</span>
+                </div>
+
+                <div id="message" class="message-box"></div>
+            </div>
+
+            <!-- SUPPORTED PLATFORMS BAR -->
+            <div class="supported-row">
+                <div class="supported-label">
+                    <i class="fa-solid fa-check-circle"></i> Popular Supported Sources
+                </div>
+                <div class="supported-icons">
+                    <span class="platform-pill"><i class="fa-brands fa-youtube" style="color:#ef4444;"></i> YouTube</span>
+                    <span class="platform-pill"><i class="fa-brands fa-tiktok" style="color:#22d3ee;"></i> TikTok</span>
+                    <span class="platform-pill"><i class="fa-brands fa-instagram" style="color:#ec4899;"></i> Instagram</span>
+                    <span class="platform-pill"><i class="fa-brands fa-facebook" style="color:#3b82f6;"></i> Facebook</span>
+                    <span class="platform-pill"><i class="fa-brands fa-x-twitter"></i> X / Twitter</span>
+                    <span class="platform-pill"><i class="fa-brands fa-vimeo-v" style="color:#38bdf8;"></i> Vimeo</span>
+                    <span class="platform-pill"><i class="fa-brands fa-soundcloud" style="color:#f97316;"></i> Audio</span>
+                </div>
+            </div>
+
+            <!-- 3 QUICK STEPS TO BALANCE HEIGHT -->
+            <div class="quick-steps">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-title">Paste URL</div>
+                    <div class="step-desc">Enter any video, reel, or track URL.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-title">Choose Quality</div>
+                    <div class="step-desc">Select 1080p, 720p or MP3 format.</div>
+                </div>
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-title">Fast Save</div>
+                    <div class="step-desc">Download directly to your device.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESULTS PANEL: THUMBNAIL & QUALITY CHOICES -->
+    <section id="video-info" class="panel fade-in">
+        <div class="results-head">
+            <div class="thumb-wrap">
+                <img id="thumb" class="vid-thumb" src="" alt="Video thumbnail">
+            </div>
+            <div class="title-block">
+                <h2 id="vidTitle">Video Title</h2>
+                <div class="title-meta">
+                    <span class="badge author-tag" id="uploaderBadge"><i class="fa-solid fa-user"></i> Source</span>
+                    <span class="badge subtle" id="durationBadge"><i class="fa-regular fa-clock"></i> Duration</span>
+                    <span class="badge subtle" id="formatCountBadge"><i class="fa-solid fa-film"></i> 0 formats</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="format-section">
+            <div class="format-filter-bar">
+                <div class="filter-tabs">
+                    <button class="tab-btn active" onclick="filterFormats('all')" id="tabAll">All Options</button>
+                    <button class="tab-btn" onclick="filterFormats('video')" id="tabVideo"><i class="fa-solid fa-video"></i> Video</button>
+                    <button class="tab-btn" onclick="filterFormats('audio')" id="tabAudio"><i class="fa-solid fa-music"></i> Audio</button>
+                </div>
+                <span class="badge"><i class="fa-solid fa-mouse-pointer"></i> Click any card to download</span>
+            </div>
+
+            <div class="format-list" id="qualityList"></div>
+        </div>
+    </section>
+
+    <!-- PROGRESS PANEL: LIVE DOWNLOAD MONITOR -->
+    <section id="progress-area" class="panel fade-in">
+        <div class="progress-header">
+            <div class="progress-title">
+                <i class="fa-solid fa-arrow-down-to-bracket" style="color:#38bdf8;"></i>
+                <span>Download Progress</span>
+            </div>
+            <span id="downloadLabel" class="badge">Starting...</span>
+        </div>
+
+        <div class="progress-track">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+
+        <div class="stats">
+            <div class="stats-speed" id="speedStat">
+                <i class="fa-solid fa-gauge-high"></i> Preparing download...
+            </div>
+            <div class="stats-percent" id="percentStat">0%</div>
+        </div>
+
+        <div class="progress-actions" id="progressActions">
+            <button class="btn-main" style="background:rgba(255,255,255,0.08); box-shadow:none; border:1px solid rgba(255,255,255,0.12);" onclick="resetDownloader()">
+                <i class="fa-solid fa-plus"></i> Download another
+            </button>
+        </div>
+    </section>
+</main>
+
+<!-- CLEAN MODERN FOOTER -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <i class="fas fa-play" style="color:#7c3aed;"></i>
+            <span>VidPRO Smart Downloader</span>
+        </div>
+        <div class="footer-credit">
+            <span>Video Downloader designed & developed by</span>
+            <strong>Azwar Malhi</strong>
+        </div>
+        <div>
+            <span>Powered by Flask & yt-dlp</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+    let currentUrl = "";
+    let currentOptions = [];
+    let activeFilter = 'all';
+    let pollTimer = null;
+
+    const urlInput = document.getElementById('url');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // Show/hide clear button on typing
+    urlInput.addEventListener('input', () => {
+        clearBtn.style.display = urlInput.value ? 'inline-flex' : 'none';
+    });
+
+    // Enter key submits analysis
+    urlInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            analyzeVideo();
+        }
+    });
+
+    function clearInput() {
+        urlInput.value = '';
+        clearBtn.style.display = 'none';
+        urlInput.focus();
+    }
+
+    async function pasteFromClipboard() {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+                urlInput.value = text.trim();
+                clearBtn.style.display = 'inline-flex';
+            }
+        } catch (err) {
+            showMessage('Unable to read clipboard. Please paste your link manually.', 'error');
+        }
+    }
+
+    function showMessage(text, kind = 'error') {
+        const message = document.getElementById('message');
+        const icon = kind === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>';
+        message.className = `message-box ${kind === 'success' ? 'success-msg' : 'error-msg'}`;
+        message.innerHTML = `${icon} <span>${text}</span>`;
+        message.style.display = 'flex';
+    }
+
+    function hideMessage() {
+        const message = document.getElementById('message');
+        message.innerHTML = '';
+        message.style.display = 'none';
+    }
+
+    function formatDuration(seconds) {
+        if (seconds === null || seconds === undefined) return 'Duration unknown';
+        const total = Math.max(0, Math.floor(seconds));
+        const hrs = Math.floor(total / 3600);
+        const mins = Math.floor((total % 3600) / 60);
+        const secs = total % 60;
+        if (hrs > 0) {
+            return [String(hrs).padStart(2, '0'), String(mins).padStart(2, '0'), String(secs).padStart(2, '0')].join(':');
+        }
+        return [String(mins).padStart(2, '0'), String(secs).padStart(2, '0')].join(':');
+    }
+
+    function filterFormats(type) {
+        activeFilter = type;
+        document.getElementById('tabAll').className = `tab-btn ${type === 'all' ? 'active' : ''}`;
+        document.getElementById('tabVideo').className = `tab-btn ${type === 'video' ? 'active' : ''}`;
+        document.getElementById('tabAudio').className = `tab-btn ${type === 'audio' ? 'active' : ''}`;
+        renderQualityList();
+    }
+
+    function renderQualityList() {
+        const list = document.getElementById('qualityList');
+        list.innerHTML = '';
+
+        let filtered = currentOptions;
+        if (activeFilter === 'video') {
+            filtered = currentOptions.filter(o => !o.label.toLowerCase().includes('audio only') && !o.note.toLowerCase().includes('audio stream'));
+        } else if (activeFilter === 'audio') {
+            filtered = currentOptions.filter(o => o.label.toLowerCase().includes('audio') || o.note.toLowerCase().includes('audio'));
+        }
+
+        if (!filtered.length) {
+            list.innerHTML = `<div style="grid-column:1/-1; padding:20px; text-align:center; color:var(--muted); background:rgba(255,255,255,0.02); border-radius:18px;">
+                No ${activeFilter} options available. Try selecting 'All Options'.
+            </div>`;
+            return;
+        }
+
+        filtered.forEach(opt => {
+            const isAudio = opt.label.toLowerCase().includes('audio') || opt.note.toLowerCase().includes('audio');
+            const iconClass = isAudio ? 'fa-solid fa-music' : 'fa-solid fa-film';
+            
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'format-card';
+            card.onclick = () => startDownload(opt.format_id, opt.label);
+            card.innerHTML = `
+                <div class="format-top">
+                    <div class="format-title-wrap">
+                        <div class="format-type-icon">
+                            <i class="${iconClass}"></i>
+                        </div>
+                        <div>
+                            <p class="format-title">${opt.label}</p>
+                            <div class="format-note">${opt.note || 'Ready to download'}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="format-bottom">
+                    <span class="size-badge"><i class="fa-solid fa-hard-drive"></i> ${opt.size || 'Auto'}</span>
+                    <span class="dl-pill">Download <i class="fa-solid fa-arrow-right"></i></span>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    async function analyzeVideo() {
+        const url = urlInput.value.trim();
+        const btn = document.getElementById('analyzeBtn');
+
+        if (!url) {
+            showMessage('Please paste a video or media link first.', 'error');
+            urlInput.focus();
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing';
+        hideMessage();
+
+        try {
+            const res = await fetch('/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url })
+            });
+            const data = await res.json();
+
+            if (data.error) throw new Error(data.error);
+
+            currentUrl = url;
+            currentOptions = data.options || [];
+
+            document.getElementById('sourceHint').innerText = 'Choose your preferred quality format below.';
+            document.getElementById('video-info').style.display = 'block';
+
+            document.getElementById('thumb').src = data.thumbnail || '';
+            document.getElementById('vidTitle').innerText = data.title || 'Untitled media';
+            document.getElementById('uploaderBadge').innerHTML = `<i class="fa-solid fa-user"></i> ${data.uploader || 'Unknown source'}`;
+            document.getElementById('durationBadge').innerHTML = `<i class="fa-regular fa-clock"></i> ${data.duration ? formatDuration(data.duration) : 'Duration unknown'}`;
+            document.getElementById('formatCountBadge').innerHTML = `<i class="fa-solid fa-film"></i> ${currentOptions.length} formats available`;
+
+            filterFormats('all');
+
+            document.getElementById('video-info').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        } catch (e) {
+            showMessage(e.message || 'Could not fetch video info. Please verify the URL.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Analyze';
+        }
+    }
+
+    async function startDownload(formatId, label) {
+        document.getElementById('video-info').style.display = 'none';
+        document.getElementById('progress-area').style.display = 'block';
+        document.getElementById('progressBar').style.width = '0%';
+        document.getElementById('percentStat').innerText = '0%';
+        document.getElementById('speedStat').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connecting to stream & downloading...';
+        document.getElementById('downloadLabel').innerText = label || 'Starting...';
+
+        document.getElementById('progress-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (pollTimer) clearInterval(pollTimer);
+
+        try {
+            const res = await fetch('/start-download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: currentUrl, format_id: formatId })
+            });
+            const data = await res.json();
+            trackProgress(data.task_id);
+        } catch (e) {
+            showMessage('Error starting download. Please try again.', 'error');
+        }
+    }
+
+    function trackProgress(taskId) {
+        pollTimer = setInterval(async () => {
+            try {
+                const res = await fetch(`/progress/${taskId}`);
+                const data = await res.json();
+
+                if (data.status === 'downloading') {
+                    const percent = Number.parseFloat(data.percent) || 0;
+                    document.getElementById('progressBar').style.width = `${percent}%`;
+                    document.getElementById('percentStat').innerText = `${Math.round(percent)}%`;
+                    document.getElementById('speedStat').innerHTML = `<i class="fa-solid fa-gauge-high"></i> ${data.speed || 'Downloading...'} &nbsp;|&nbsp; <i class="fa-regular fa-clock"></i> ETA: ${data.eta || '...'}`;
+                } else if (data.status === 'finished') {
+                    clearInterval(pollTimer);
+                    document.getElementById('progressBar').style.width = '100%';
+                    document.getElementById('percentStat').innerText = '100%';
+                    document.getElementById('speedStat').innerHTML = '<i class="fa-solid fa-circle-check" style="color:#10b981;"></i> Download complete!';
+                    
+                    const filename = data.filename || '';
+                    let successHtml = `<span>Download completed! Saved to local downloads folder.</span>`;
+                    
+                    if (filename) {
+                        const actions = document.getElementById('progressActions');
+                        actions.innerHTML = `
+                            <a href="/downloads/${encodeURIComponent(filename)}" download class="btn-main">
+                                <i class="fa-solid fa-download"></i> Save to Computer (${filename})
+                            </a>
+                            <button class="btn-main" style="background:rgba(255,255,255,0.08); box-shadow:none; border:1px solid rgba(255,255,255,0.12);" onclick="resetDownloader()">
+                                <i class="fa-solid fa-plus"></i> Download another
+                            </button>
+                        `;
+                    }
+                    
+                    showMessage('Your media has been downloaded successfully and stored in the downloads folder.', 'success');
+                } else if (data.status === 'error') {
+                    clearInterval(pollTimer);
+                    showMessage(data.message || 'Download failed.', 'error');
+                }
+            } catch (err) {
+                // Network glitch in polling
+            }
+        }, 1000);
+    }
+
+    function resetDownloader() {
+        if (pollTimer) clearInterval(pollTimer);
+        document.getElementById('progress-area').style.display = 'none';
+        document.getElementById('video-info').style.display = 'none';
+        urlInput.value = '';
+        clearBtn.style.display = 'none';
+        hideMessage();
+        document.getElementById('sourceHint').innerText = 'Results appear below after analysis.';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        urlInput.focus();
+    }
+</script>
+</body>
+</html>
